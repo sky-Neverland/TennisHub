@@ -4,7 +4,7 @@
 Tennis Hub
 
 ## Description
-Our Project -TennisHub- is a dynamic web application hosted on AWS, designed exclusively for tennis enthusiasts. The platform allows users to effortlessly search for videos of their favorite players and share their own tennis moments. Additionally, TennisHub leverages Amazon Lookout for Vision to provide personalized recommendations and advice based on the user's uploaded videos.
+Our Project **TennisHub** is a dynamic web application hosted on AWS, designed exclusively for tennis enthusiasts. The platform allows users to effortlessly search for videos of their favorite players and share their own tennis moments. Additionally, TennisHub leverages Amazon Lookout for Vision to provide personalized recommendations and advice based on the user's uploaded videos.
 
 ## Key Feature
 - Player Video Search: Users can easily find videos of their favorite tennis players, creating a centralized hub for curated content.

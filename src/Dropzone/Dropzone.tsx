@@ -5,7 +5,7 @@ import { IconCloudUpload, IconX, IconDownload } from "@tabler/icons-react";
 import Preview from "./Preview/Preview";
 import { IFile } from "../types";
 
-const MAX_SIZE = 10; // File size in MB
+const MAX_SIZE = 8; // File size in MB
 const useStyles = createStyles((theme) => ({
     dropzone: {
         borderWidth: rem(1),

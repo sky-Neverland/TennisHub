@@ -6,7 +6,7 @@ import {
     IUser,
     IUserResponse,
     RDS_API,
-    UploadState
+    UploadState,
 } from "./types";
 
 export const uploadVideo: (
@@ -39,7 +39,7 @@ export const uploadVideo: (
     } catch (e) {
         console.log(e);
         setLoading(false);
-        setUploadState(UploadState.FAILED)
+        setUploadState(UploadState.FAILED);
     }
 };
 
@@ -53,11 +53,15 @@ export const getPulicVideos: (
         },
     };
     try {
-        await fetch(RDS_URL + RDS_API.LIST_PUBLIC_VIDEOS, requestOptions)
-            .then((response) => response.json())
-            .then(({ data }: IFileResponse) => {
-                setFile((file) => file && [...data, ...file]);
-            });
+        await fetch(RDS_URL + RDS_API.LIST_PUBLIC_VIDEOS, requestOptions).then(
+            (response) => {
+                if (response.status === 200)
+                    response.json().then(({ data }: IFileResponse) => {
+                        data && setFile((file) => file && [...data, ...file]);
+                    });
+                else throw new Error("Get Public Videos Failed");
+            }
+        );
     } catch (e) {
         console.log(e);
     }
@@ -73,11 +77,15 @@ export const getUsers: (
         },
     };
     try {
-        await fetch(RDS_URL + RDS_API.GET_USERS, requestOptions)
-            .then((response) => response.json())
-            .then(({ data }: IUserResponse) => {
-                setUsers((users) => users && [...data, ...users]);
-            });
+        await fetch(RDS_URL + RDS_API.GET_USERS, requestOptions).then(
+            (response) => {
+                if (response.status === 200)
+                    response.json().then(({ data }: IUserResponse) => {
+                        data && setUsers((user) => user && [...data, ...user]);
+                    });
+                else throw new Error("Get Users Failed");
+            }
+        );
     } catch (e) {
         console.log(e);
     }
@@ -97,11 +105,13 @@ export const getUserVideos: (
         await fetch(
             RDS_URL + RDS_API.LIST_USER_VIDEOS + "/" + userId,
             requestOptions
-        )
-            .then((response) => response.json())
-            .then(({ data }: IFileResponse) => {
-                setFile((file) => file && [...data, ...file]);
-            });
+        ).then((response) => {
+            if (response.status === 200)
+                response.json().then(({ data }: IFileResponse) => {
+                    data && setFile((file) => file && [...data, ...file]);
+                });
+            else throw new Error("Get User Videos Failed");
+        });
     } catch (e) {
         console.log(e);
     }

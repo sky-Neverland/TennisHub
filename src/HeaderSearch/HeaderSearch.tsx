@@ -1,14 +1,9 @@
-import React, { FC } from "react";
+import React, { Children, FC } from "react";
 import { createStyles, Header, Autocomplete, Group, rem } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import { IFile } from "../types";
 
 const useStyles = createStyles((theme) => ({
-    header: {
-        paddingLeft: theme.spacing.md,
-        paddingRight: theme.spacing.md,
-    },
-
     inner: {
         height: rem(56),
         display: "flex",
@@ -36,23 +31,20 @@ const HeaderSearch: FC<{
     const { classes } = useStyles();
 
     return (
-        <Header height={56} className={classes.header}>
-            <div className={classes.inner}>
-                <Group>
-                    <Autocomplete
-                        className={classes.search}
-                        placeholder="Search"
-                        icon={<IconSearch size="16px" stroke={1.5} />}
-                        data={data.map((file) => file.name)}
-                        onChange={(value) => setValue(value)}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter")
-                                setValue(e.currentTarget.value);
-                        }}
-                    />
-                </Group>
-            </div>
-        </Header>
+        <div className={classes.inner}>
+            <Group>
+                <Autocomplete
+                    className={classes.search}
+                    placeholder="Search"
+                    icon={<IconSearch size="16px" stroke={1.5} />}
+                    data={data.map((file) => file.assetname)}
+                    onChange={(value) => setValue(value)}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter") setValue(e.currentTarget.value);
+                    }}
+                />
+            </Group>
+        </div>
     );
 };
 

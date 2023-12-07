@@ -1,18 +1,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import ModelCard from "../ModelCard/ModelCard";
 import HeaderSearch from "../HeaderSearch/HeaderSearch";
-import Dropzone from "../Dropzone/Dropzone";
 import Grid from "../Grid/Grid";
-import { FILES } from "../constants";
-import { getVideos, uploadVideo } from "../ModelCard/utils";
-import { IFile } from "../types";
+import { getPulicVideos } from "../utils";
+import { IFile, TrackState } from "../types";
 
 const PublicTab = () => {
     const [value, setValue] = useState("");
-    const [file, setFile] = useState(FILES);
+    const [file, setFile] = useState<IFile[]>([]);
     const renderRef = useRef(true);
     useEffect(() => {
-        if (renderRef.current) getVideos(file, setFile);
+        if (renderRef.current) getPulicVideos(setFile);
         return () => {
             renderRef.current = false;
         };
@@ -25,17 +23,27 @@ const PublicTab = () => {
                 {file.map((file) => {
                     return (
                         <ModelCard
-                            key={file.name}
-                            title={file.name}
-                            display={file.name.includes(value)}
+                            key={file.assetid}
+                            title={file.assetname}
+                            display={file.assetname.includes(value)}
                         >
                             <iframe
-                                src={file.src}
+                                src={file.org_video_url}
                                 title="YouTube video player"
                                 style={{ border: 0 }}
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                 allowFullScreen
                             ></iframe>
+
+                            {file.tracked === TrackState.DONE && (
+                                <iframe
+                                    src={file.new_video_url}
+                                    title="YouTube video player"
+                                    style={{ border: 0 }}
+                                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowFullScreen
+                                ></iframe>
+                            )}
                         </ModelCard>
                     );
                 })}

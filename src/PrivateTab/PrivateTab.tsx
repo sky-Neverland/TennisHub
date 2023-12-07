@@ -1,41 +1,61 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
+import { Text } from "@mantine/core";
 import ModelCard from "../ModelCard/ModelCard";
 import HeaderSearch from "../HeaderSearch/HeaderSearch";
 import Dropzone from "../Dropzone/Dropzone";
 import Grid from "../Grid/Grid";
-import { getVideos, uploadVideo } from "../ModelCard/utils";
-import { IFile } from "../types";
+import { uploadVideo, getUserVideos } from "../utils";
+import { IFile, IUploadRequest, UploadState } from "../types";
 
-const PrivateTab = () => {
+interface PrivateTabProps {
+    userId?: string;
+}
+const PrivateTab = ({ userId }: PrivateTabProps) => {
     const [value, setValue] = useState("");
-    const [file, setFile] = useState([] as IFile[]);
-    const renderRef = useRef(true);
-    const onDrop = (newFile: IFile) => uploadVideo(file, setFile, newFile);
-    
+    const [file, setFile] = useState<IFile[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [uploadState, setUploadState] = useState(UploadState.IDLE);
+    const onDrop = (newFile: IUploadRequest) =>
+        userId &&
+        uploadVideo(setFile, setLoading, setUploadState, newFile, userId);
+
     useEffect(() => {
-        if (renderRef.current) getVideos(file, setFile);
-        return () => {
-            renderRef.current = false;
-        };
-    }, []);
+        setFile([]);
+        userId && getUserVideos(userId, setFile);
+    }, [userId]);
 
     return (
         <div>
             <HeaderSearch setValue={setValue} data={file} />
-            <Dropzone onDrop={onDrop} />
+            <Dropzone
+                onDrop={onDrop}
+                loading={loading}
+                disabled={!!!userId}
+                uploadState={uploadState}
+            />
             <Grid>
+                {!userId && (
+                    <Text color="red" size={20}>
+                        Please select a user
+                    </Text>
+                )}
+                {userId && file.length === 0 && (
+                    <Text color="red" size={20}>
+                        No videos found
+                    </Text>
+                )}
                 {file.map((file) => {
                     return (
                         <ModelCard
-                            key={file.name}
-                            title={file.name}
-                            display={file.name.includes(value)}
+                            key={file.assetid}
+                            title={file.assetname}
+                            display={file.assetname.includes(value)}
                         >
                             <iframe
-                                src={file.src}
+                                src={file.org_video_url}
                                 title="YouTube video player"
                                 style={{ border: 0 }}
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                 allowFullScreen
                             ></iframe>
                         </ModelCard>

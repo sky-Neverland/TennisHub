@@ -1,5 +1,4 @@
 # Tennis Hub
-<img width="1159" alt="image" src="https://github.com/sky-Neverland/TennisHub/assets/48169106/ace3904a-6611-4948-9e00-af6069838419">
 
 ## Name
 Tennis Hub
@@ -13,8 +12,6 @@ Our Project **TennisHub** is a dynamic web application hosted on AWS, designed e
 - If time allows: Personalized Recommendations: Utilizing Amazon Lookout for Vision, the application analyzes user-uploaded videos to provide tailored recommendations and advice, enhancing the user's gameplay and strategy.
 
 ## Run
-`$ npm i`
-
 `$ npx vite build`
 
 `$ npx vite`

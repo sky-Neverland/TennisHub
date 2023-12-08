@@ -9,8 +9,11 @@ interface PulicTabProps {
 }
 const PublicTab = ({ users, userid }: PulicTabProps) => {
     const [value, setValue] = useState<string>("");
-    const { publicFiles: files, setPublicFiles: setFiles } =
-        useContext(TabContext);
+    const {
+        publicFiles: files,
+        setPublicFiles: setFiles,
+        setUserFiles,
+    } = useContext(TabContext);
     const renderRef = useRef(true);
     const [loading, setLoading] = useState<boolean>(false);
     const [uploadState, setUploadState] = useState<UploadState>(
@@ -19,7 +22,14 @@ const PublicTab = ({ users, userid }: PulicTabProps) => {
     const onDrop = (newFile: IUploadRequest) => {
         setUploadState(UploadState.IDLE);
         userid &&
-            uploadVideo(setFiles, setLoading, setUploadState, newFile, userid);
+            uploadVideo(
+                setFiles,
+                setUserFiles,
+                setLoading,
+                setUploadState,
+                newFile,
+                userid
+            );
     };
     useEffect(() => {
         if (renderRef.current) getPulicVideos(setFiles, setLoading);
@@ -54,7 +64,6 @@ const PublicTab = ({ users, userid }: PulicTabProps) => {
                             track={file.tracked}
                             author={user?.lastname + " " + user?.firstname}
                             isPublic
-                            setFiles={setFiles}
                             assetid={file.assetid}
                             userid={file.userid}
                         />

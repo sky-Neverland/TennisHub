@@ -11,12 +11,20 @@ import {
 } from "./types";
 
 export const uploadVideo: (
-    setFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
+    setPublicFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
+    setUserFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
     setLoading: React.Dispatch<React.SetStateAction<boolean>>,
     setUploadState: React.Dispatch<React.SetStateAction<UploadState>>,
     newFile: IUploadRequest,
     userid: string
-) => void = async (setFiles, setLoading, setUploadState, newFile, userid) => {
+) => void = async (
+    setPublicFiles,
+    setUserFiles,
+    setLoading,
+    setUploadState,
+    newFile,
+    userid
+) => {
     const requestOptions: RequestInit = {
         method: "POST",
         headers: {
@@ -33,7 +41,10 @@ export const uploadVideo: (
         ).then((response) => {
             if (response.status === 200)
                 response.json().then(({ data }: IFileResponse) => {
-                    data && setFiles((files) => files && [...data, ...files]);
+                    data &&
+                        newFile.isPublic &&
+                        setPublicFiles((files) => files && [...data, ...files]);
+                    data && setUserFiles((files) => [...data, ...files]);
                     setLoading(false);
                     setUploadState(UploadState.DONE);
                 });
@@ -130,10 +141,12 @@ export const getUserVideos: (
 };
 
 export const deleteVideo: (
-    setFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
+    setPublicFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
+    setUserFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
+    userFiles: IFile[],
     assetid: string,
     userid: string
-) => void = async (setFiles, assetid, userid) => {
+) => void = async (setPublicFiles, setUserFiles, userFiles, assetid, userid) => {
     const requestOptions: RequestInit = {
         method: "DELETE",
         headers: {
@@ -146,7 +159,12 @@ export const deleteVideo: (
             requestOptions
         ).then((response) => {
             if (response.status === 200) {
-                setFiles((files) => files.filter((f) => f.assetid !== assetid));
+                const fileDeleted = userFiles.find((f) => f.assetid === assetid);
+                if (fileDeleted?.public)
+                    setPublicFiles((files) =>
+                        files.filter((f) => f.assetid !== assetid)
+                    );
+                setUserFiles((files) => files.filter((f) => f.assetid !== assetid));
             } else throw new Error("Delete Video Failed");
         });
     } catch (e) {

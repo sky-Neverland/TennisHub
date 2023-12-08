@@ -81,7 +81,6 @@ const ArticleCard = ({
     author,
     src,
     newSrc,
-    setFiles,
     assetid,
     userid,
     isPublic,
@@ -155,11 +154,7 @@ const ArticleCard = ({
                             userid={userid}
                             isPublic={isPublic}
                         />
-                        <DeleteButton
-                            setFiles={setFiles}
-                            assetid={assetid}
-                            userid={userid}
-                        />
+                        <DeleteButton assetid={assetid} userid={userid} />
                     </>
                 )}
             </Flex>

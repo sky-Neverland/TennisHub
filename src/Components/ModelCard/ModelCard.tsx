@@ -2,7 +2,6 @@ import React from "react";
 // import { IconBookmark, IconHeart, IconShare } from "@tabler/icons-react";
 import {
     Card,
-    Image,
     Text,
     Badge,
     Group,
@@ -11,8 +10,16 @@ import {
     rem,
     Flex,
 } from "@mantine/core";
-import { TrackState } from "../types";
+import { TrackState } from "../../types";
 import { IconUser } from "@tabler/icons-react";
+import {
+    DeleteButton,
+    DeleteButtonProps,
+    PrivateButton,
+    PrivateButtonProps,
+    TrackButton,
+    TrackButtonProps,
+} from "../../Components";
 
 const useStyles = createStyles((theme) => ({
     card: {
@@ -21,7 +28,7 @@ const useStyles = createStyles((theme) => ({
             theme.colorScheme === "dark" ? theme.colors.dark[7] : theme.white,
     },
 
-    rating: {
+    track: {
         position: "absolute",
         top: theme.spacing.xs,
         right: rem(12),
@@ -53,30 +60,38 @@ const useStyles = createStyles((theme) => ({
     },
 }));
 
-interface ArticleCardProps {
+interface ArticleCardProps
+    extends DeleteButtonProps,
+        PrivateButtonProps,
+        TrackButtonProps {
     display: boolean;
-    image?: string;
     link?: string;
     title?: string;
-    rating?: string;
     author?: string;
-    deleteButton?: React.ReactNode;
+    src: string;
+    newSrc?: string;
+    isPublicPage?: boolean;
 }
 
 const ArticleCard = ({
     className,
     display,
-    image,
     link,
     title,
     author,
-    rating,
-    children,
-    deleteButton,
+    src,
+    newSrc,
+    setFiles,
+    assetid,
+    userid,
+    isPublic,
+    track,
+    isPublicPage,
     ...others
 }: ArticleCardProps &
     Omit<React.ComponentPropsWithoutRef<"div">, keyof ArticleCardProps>) => {
     const { classes, cx, theme } = useStyles();
+    const [showTrack, setShowTrack] = React.useState<boolean>(false);
     return (
         <Card
             style={{ display: display ? "block" : "none" }}
@@ -85,37 +100,47 @@ const ArticleCard = ({
             className={cx(classes.card, className)}
             {...others}
         >
-            {image && (
-                <Card.Section>
-                    <Image src={image} height={180} />
-                </Card.Section>
-            )}
-            <Card.Section>{children} </Card.Section>
-            {rating === TrackState.DONE && (
+            <Card.Section>
+                <iframe
+                    src={track === TrackState.DONE && showTrack ? newSrc : src}
+                    title="YouTube video player"
+                    style={{ border: 0, aspectRatio: 16 / 9 }}
+                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    allowFullScreen
+                    loading="lazy"
+                    width="100%"
+                ></iframe>
+            </Card.Section>
+            {track === TrackState.DONE && (
                 <Badge
-                    className={classes.rating}
+                    className={classes.track}
                     variant="gradient"
                     gradient={{ from: "yellow", to: "red" }}
                 >
-                    {rating}
+                    {track}
                 </Badge>
             )}
-            {rating === TrackState.PENDING && (
+            {track === TrackState.PENDING && (
                 <Badge
-                    className={classes.rating}
+                    className={classes.track}
                     variant="outline"
                     color="gray"
                 >
-                    {rating}
+                    {track}
                 </Badge>
             )}
-            {rating === TrackState.UNTRACKED && (
+            {track === TrackState.UNTRACKED && (
                 <Badge
-                    className={classes.rating}
+                    className={classes.track}
                     variant="outline"
                     color="blue"
                 >
-                    {rating}
+                    {track}
+                </Badge>
+            )}
+            {track === TrackState.FAILED && (
+                <Badge className={classes.track} color="red">
+                    {track}
                 </Badge>
             )}
             <Flex justify="space-between" align="center">
@@ -124,7 +149,26 @@ const ArticleCard = ({
                         {title}
                     </Text>
                 )}
-                {deleteButton}
+                <TrackButton
+                    setFiles={setFiles}
+                    assetid={assetid}
+                    userid={userid}
+                    showTrack={showTrack}
+                    setShowTrack={setShowTrack}
+                    track={track}
+                />
+                <PrivateButton
+                    isPublicPage = {isPublicPage}
+                    setFiles={setFiles}
+                    assetid={assetid}
+                    userid={userid}
+                    isPublic={isPublic}
+                />
+                <DeleteButton
+                    setFiles={setFiles}
+                    assetid={assetid}
+                    userid={userid}
+                />
             </Flex>
 
             {author && (

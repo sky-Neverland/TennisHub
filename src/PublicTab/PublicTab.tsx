@@ -1,29 +1,26 @@
 import React, { useState, useEffect, useRef } from "react";
-import ModelCard from "../ModelCard/ModelCard";
-import HeaderSearch from "../HeaderSearch/HeaderSearch";
-import Grid from "../Grid/Grid";
-import Dropzone from "../Dropzone/Dropzone";
+import { ModelCard, HeaderSearch, Grid, Dropzone } from "../Components";
 import { getPulicVideos, uploadVideo } from "../utils";
-import { IFile, IUser, TrackState, UploadState, IUploadRequest } from "../types";
-import DeleteButton from "../DeleteButton";
-
+import { IFile, IUser, UploadState, IUploadRequest } from "../types";
 interface PulicTabProps {
     users: IUser[];
-    userId: string;
+    userid: string;
 }
-const PublicTab = ({ users, userId }: PulicTabProps) => {
-    const [value, setValue] = useState("");
-    const [file, setFile] = useState<IFile[]>([]);
+const PublicTab = ({ users, userid }: PulicTabProps) => {
+    const [value, setValue] = useState<string>("");
+    const [files, setFiles] = useState<IFile[]>([]);
     const renderRef = useRef(true);
-    const [loading, setLoading] = useState(false);
-    const [uploadState, setUploadState] = useState(UploadState.IDLE);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [uploadState, setUploadState] = useState<UploadState>(
+        UploadState.IDLE
+    );
     const onDrop = (newFile: IUploadRequest) => {
         setUploadState(UploadState.IDLE);
-        userId &&
-            uploadVideo(setFile, setLoading, setUploadState, newFile, userId);
+        userid &&
+            uploadVideo(setFiles, setLoading, setUploadState, newFile, userid);
     };
     useEffect(() => {
-        if (renderRef.current) getPulicVideos(setFile);
+        if (renderRef.current) getPulicVideos(setFiles, setLoading);
         return () => {
             renderRef.current = false;
         };
@@ -31,56 +28,34 @@ const PublicTab = ({ users, userId }: PulicTabProps) => {
 
     return (
         <div>
-            <HeaderSearch setValue={setValue} data={file} />
+            <HeaderSearch setValue={setValue} data={files} />
             <Dropzone
                 onDrop={onDrop}
                 loading={loading}
-                disabled={!!!userId}
+                disabled={!!!userid}
                 uploadState={uploadState}
                 isPublic={true}
             />
             <Grid>
-                {file.map((file) => {
+                {files.map((file) => {
                     const user = users.find(
                         (user) => user.userid === file.userid
                     );
                     return (
                         <ModelCard
+                            isPublicPage
+                            src={file.org_video_url}
+                            newSrc={file.new_video_url}
                             key={file.assetid}
                             title={file.assetname}
                             display={file.assetname.includes(value)}
-                            rating={file.tracked}
+                            track={file.tracked}
                             author={user?.lastname + " " + user?.firstname}
-                            deleteButton={
-                                file.userid === userId && (
-                                    <DeleteButton
-                                        setFile={setFile}
-                                        assetid={file.assetid}
-                                        userid={userId}
-                                    />
-                                )
-                            }
-                        >
-                            <iframe
-                                src={file.org_video_url}
-                                title="YouTube video player"
-                                style={{ border: 0 }}
-                                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                allowFullScreen
-                                loading="lazy"
-                            ></iframe>
-
-                            {file.tracked === TrackState.DONE && (
-                                <iframe
-                                    src={file.new_video_url}
-                                    title="YouTube video player"
-                                    style={{ border: 0 }}
-                                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                    allowFullScreen
-                                    loading="lazy"
-                                ></iframe>
-                            )}
-                        </ModelCard>
+                            isPublic
+                            setFiles={setFiles}
+                            assetid={file.assetid}
+                            userid={file.userid}
+                        />
                     );
                 })}
             </Grid>

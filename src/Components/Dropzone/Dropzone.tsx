@@ -9,7 +9,7 @@ import {
     IconUserOff,
 } from "@tabler/icons-react";
 import Preview from "./Preview/Preview";
-import { IUploadRequest, UploadState } from "../types";
+import { IUploadRequest, UploadState } from "../../types";
 
 const MAX_SIZE = 8; // File size in MB
 const useStyles = createStyles((theme) => ({
@@ -87,7 +87,8 @@ const Dropzone: FC<{
                         />
                     </Drop.Reject>
                     <Drop.Idle>
-                        {files.length > 0 ? (
+                        {files.length > 0 &&
+                        uploadState !== UploadState.DONE ? (
                             files.map((file, idx) => (
                                 <Preview
                                     key={idx.toString()}

@@ -1,7 +1,7 @@
 import React, { Children, FC } from "react";
 import { createStyles, Header, Autocomplete, Group, rem } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
-import { IFile } from "../types";
+import { IFile } from "../../types";
 
 const useStyles = createStyles((theme) => ({
     inner: {

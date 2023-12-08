@@ -11,7 +11,7 @@ import UserSelect from "./UserSelect";
 export function App() {
     const [users, setUsers] = useState<IUser[]>([]);
     const renderRef = useRef(true);
-    const [userId, setUserId] = useState<string>("");
+    const [userid, setUserId] = useState<string>("");
     useEffect(() => {
         if (renderRef.current) getUsers(setUsers);
         return () => {
@@ -38,11 +38,11 @@ export function App() {
                     </Tabs.List>
 
                     <Tabs.Panel value="public">
-                        <PublicTab users={users} userId={userId} />
+                        <PublicTab users={users} userid={userid} />
                     </Tabs.Panel>
 
                     <Tabs.Panel value="user">
-                        <UserTab userId={userId} />
+                        <UserTab userid={userid} />
                     </Tabs.Panel>
                 </Tabs>
             </Container>

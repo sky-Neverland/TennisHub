@@ -1,89 +1,76 @@
 import React, { useState, useEffect } from "react";
-import { Text } from "@mantine/core";
-import ModelCard from "../ModelCard/ModelCard";
-import HeaderSearch from "../HeaderSearch/HeaderSearch";
-import Dropzone from "../Dropzone/Dropzone";
-import Grid from "../Grid/Grid";
+import { Flex, Text, Box, LoadingOverlay } from "@mantine/core";
+import { ModelCard, HeaderSearch, Dropzone, Grid } from "../Components";
 import { uploadVideo, getUserVideos } from "../utils";
 import { IFile, IUploadRequest, UploadState, TrackState } from "../types";
-import DeleteButton from "../DeleteButton";
+import { IconAlertTriangle, IconVideoOff } from "@tabler/icons-react";
 
 interface PrivateTabProps {
-    userId?: string;
+    userid?: string;
 }
-const UserTab = ({ userId }: PrivateTabProps) => {
-    const [value, setValue] = useState("");
-    const [file, setFile] = useState<IFile[]>([]);
-    const [loading, setLoading] = useState(false);
-    const [uploadState, setUploadState] = useState(UploadState.IDLE);
+const UserTab = ({ userid }: PrivateTabProps) => {
+    const [value, setValue] = useState<string>("");
+    const [files, setFiles] = useState<IFile[]>([]);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [uploadState, setUploadState] = useState<UploadState>(
+        UploadState.IDLE
+    );
     const onDrop = (newFile: IUploadRequest) => {
         setUploadState(UploadState.IDLE);
-        userId &&
-            uploadVideo(setFile, setLoading, setUploadState, newFile, userId);
+        userid &&
+            uploadVideo(setFiles, setLoading, setUploadState, newFile, userid);
     };
     useEffect(() => {
-        setFile([]);
-        userId && getUserVideos(userId, setFile);
-    }, [userId]);
+        setFiles([]);
+        userid && getUserVideos(userid, setFiles, setLoading);
+    }, [userid]);
 
     return (
         <div>
-            <HeaderSearch setValue={setValue} data={file} />
+            <HeaderSearch setValue={setValue} data={files} />
             <Dropzone
                 onDrop={onDrop}
                 loading={loading}
-                disabled={!!!userId}
+                disabled={!!!userid}
                 uploadState={uploadState}
             />
-            <Grid>
-                {!userId && (
-                    <Text color="red" size={20}>
-                        Please select a user
-                    </Text>
+            <Box>
+                <LoadingOverlay visible={loading} />
+                {!userid && (
+                    <Flex align="center" m="md">
+                        <IconAlertTriangle size={20} color="red" />
+                        <Text color="red" size={20} ml="md">
+                            Please select a user
+                        </Text>
+                    </Flex>
                 )}
-                {userId && file.length === 0 && (
-                    <Text size={20}>
-                        No videos found. Please upload a video.
-                    </Text>
+                {!loading && userid && files.length === 0 && (
+                    <Flex align="center" m="md">
+                        <IconVideoOff size={20} color="orange" />
+                        <Text color="orange" size={20} ml="md">
+                            No videos found. Please upload a video.
+                        </Text>
+                    </Flex>
                 )}
-                {file.map((file) => {
-                    return (
-                        <ModelCard
-                            key={file.assetid}
-                            title={file.assetname}
-                            display={file.assetname.includes(value)}
-                            rating={file.tracked}
-                            deleteButton={
-                                <DeleteButton
-                                    setFile={setFile}
-                                    assetid={file.assetid}
-                                    userid={file.userid}
-                                />
-                            }
-                        >
-                            <iframe
+                <Grid>
+                    {files.map((file) => {
+                        return (
+                            <ModelCard
                                 src={file.org_video_url}
-                                title="YouTube video player"
-                                style={{ border: 0 }}
-                                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                allowFullScreen
-                                loading="lazy"
-                            ></iframe>
-
-                            {file.tracked === TrackState.DONE && (
-                                <iframe
-                                    src={file.new_video_url}
-                                    title="YouTube video player"
-                                    style={{ border: 0 }}
-                                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                    allowFullScreen
-                                    loading="lazy"
-                                ></iframe>
-                            )}
-                        </ModelCard>
-                    );
-                })}
-            </Grid>
+                                newSrc={file.new_video_url}
+                                key={file.assetid}
+                                title={file.assetname}
+                                display={file.assetname.includes(value)}
+                                track={file.tracked}
+                                setFiles={setFiles}
+                                assetid={file.assetid}
+                                userid={file.userid}
+                                isPublic={file.public}
+                            />
+                        );
+                    })}
+                </Grid>
+            </Box>
         </div>
     );
 };

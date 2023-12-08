@@ -7,15 +7,16 @@ import {
     IUserResponse,
     RDS_API,
     UploadState,
+    TrackState,
 } from "./types";
 
 export const uploadVideo: (
-    setFile: React.Dispatch<React.SetStateAction<IFile[]>>,
+    setFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
     setLoading: React.Dispatch<React.SetStateAction<boolean>>,
     setUploadState: React.Dispatch<React.SetStateAction<UploadState>>,
     newFile: IUploadRequest,
-    userId: string
-) => void = async (setFile, setLoading, setUploadState, newFile, userId) => {
+    userid: string
+) => void = async (setFiles, setLoading, setUploadState, newFile, userid) => {
     const requestOptions: RequestInit = {
         method: "POST",
         headers: {
@@ -27,12 +28,12 @@ export const uploadVideo: (
     try {
         setLoading(true);
         await fetch(
-            RDS_URL + RDS_API.UPLOAD_VIDEO + "/" + userId,
+            RDS_URL + RDS_API.UPLOAD_VIDEO + "/" + userid,
             requestOptions
         ).then((response) => {
             if (response.status === 200)
                 response.json().then(({ data }: IFileResponse) => {
-                    data && setFile((file) => file && [...data, ...file]);
+                    data && setFiles((files) => files && [...data, ...files]);
                     setLoading(false);
                     setUploadState(UploadState.DONE);
                 });
@@ -46,26 +47,31 @@ export const uploadVideo: (
 };
 
 export const getPulicVideos: (
-    setFile: React.Dispatch<React.SetStateAction<IFile[]>>
-) => void = async (setFile) => {
+    setFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
+    setLoading: React.Dispatch<React.SetStateAction<boolean>>
+) => void = async (setFiles, setLoading) => {
     const requestOptions: RequestInit = {
         method: "GET",
         headers: {
             accept: "application/json",
         },
     };
+    setLoading(true);
     try {
         await fetch(RDS_URL + RDS_API.LIST_PUBLIC_VIDEOS, requestOptions).then(
             (response) => {
                 if (response.status === 200)
                     response.json().then(({ data }: IFileResponse) => {
-                        data && setFile((file) => file && [...data, ...file]);
+                        data &&
+                            setFiles((files) => files && [...data, ...files]);
+                        setLoading(false);
                     });
                 else throw new Error("Get Public Videos Failed");
             }
         );
     } catch (e) {
         console.log(e);
+        setLoading(false);
     }
 };
 
@@ -94,36 +100,41 @@ export const getUsers: (
 };
 
 export const getUserVideos: (
-    userId: string,
-    setFile: React.Dispatch<React.SetStateAction<IFile[]>>
-) => void = async (userId, setFile) => {
+    userid: string,
+    setFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
+    setLoading: React.Dispatch<React.SetStateAction<boolean>>
+) => void = async (userid, setFiles, setLoading) => {
     const requestOptions: RequestInit = {
         method: "GET",
         headers: {
             accept: "application/json",
         },
     };
+    setLoading(true);
     try {
         await fetch(
-            RDS_URL + RDS_API.LIST_USER_VIDEOS + "/" + userId,
+            RDS_URL + RDS_API.LIST_USER_VIDEOS + "/" + userid,
             requestOptions
         ).then((response) => {
             if (response.status === 200)
                 response.json().then(({ data }: IFileResponse) => {
-                    data && setFile((file) => file && [...data, ...file]);
+                    console.log(data);
+                    data && setFiles((files) => files && [...data, ...files]);
+                    setLoading(false);
                 });
             else throw new Error("Get User Videos Failed");
         });
     } catch (e) {
         console.log(e);
+        setLoading(false);
     }
 };
 
 export const deleteVideo: (
-    setFile: React.Dispatch<React.SetStateAction<IFile[]>>,
+    setFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
     assetid: string,
     userid: string
-) => void = async (setFile, assetid, userid) => {
+) => void = async (setFiles, assetid, userid) => {
     const requestOptions: RequestInit = {
         method: "DELETE",
         headers: {
@@ -136,10 +147,105 @@ export const deleteVideo: (
             requestOptions
         ).then((response) => {
             if (response.status === 200) {
-                setFile((file) => file.filter((f) => f.assetid !== assetid));
+                setFiles((files) => files.filter((f) => f.assetid !== assetid));
             } else throw new Error("Delete Video Failed");
         });
     } catch (e) {
         console.log(e);
+    }
+};
+
+export const changeVisibility: (
+    setFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
+    assetid: string,
+    userid: string,
+    isPublic?: boolean,
+    isPublicPage?: boolean
+) => void = async (setFiles, assetid, userid, isPublic, isPublicPage) => {
+    const requestOptions: RequestInit = {
+        method: "PUT",
+        headers: {
+            accept: "application/json",
+        },
+        body: JSON.stringify({ isPublic: !!isPublic }),
+    };
+    try {
+        await fetch(
+            RDS_URL +
+                RDS_API.CHANGE_VISIBILITY +
+                "/" +
+                userid +
+                "/" +
+                assetid +
+                "/" +
+                (!!!isPublic).toString(),
+            requestOptions
+        ).then((response) => {
+            if (response.status === 200) {
+                if (isPublicPage)
+                    setFiles((files) =>
+                        files.filter((f) =>  f.assetid !== assetid)
+                    );
+                else
+                    setFiles((files) =>
+                        files.map((f) =>
+                            f.assetid === assetid
+                                ? { ...f, public: !f.public }
+                                : f
+                        )
+                    );
+            } else throw new Error("Change Visibility Failed");
+        });
+    } catch (e) {
+        console.log(e);
+    }
+};
+
+export const trackVideo: (
+    setFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
+    userid: string,
+    assetid: string,
+    setShowTrack: React.Dispatch<React.SetStateAction<boolean>>
+) => void = async (setFiles, userid, assetid, setShowTrack) => {
+    const requestOptions: RequestInit = {
+        method: "POST",
+        headers: {
+            accept: "application/json",
+        },
+    };
+    try {
+        setFiles((files) =>
+            files.map((f) =>
+                f.assetid === assetid
+                    ? { ...f, tracked: TrackState.PENDING }
+                    : f
+            )
+        );
+        await fetch(
+            RDS_URL + RDS_API.UPLOAD_VIDEO + "/" + userid,
+            requestOptions
+        ).then((response) => {
+            if (response.status === 200)
+                response.json().then(({ data }: IFileResponse) => {
+                    data &&
+                        setFiles((files) =>
+                            [...data, ...files].map((f) =>
+                                f.assetid === assetid
+                                    ? { ...f, tracked: TrackState.DONE }
+                                    : f
+                            )
+                        );
+                    setShowTrack(true);
+                });
+            else throw new Error("Track Failed");
+        });
+    } catch (e) {
+        console.log(e);
+        setFiles((files) =>
+            files.map((f) =>
+                f.assetid === assetid ? { ...f, tracked: TrackState.FAILED } : f
+            )
+        );
+        setShowTrack(false);
     }
 };

@@ -4,7 +4,6 @@ import React, { useState, useRef, useEffect } from "react";
 import PublicTab from "./PublicTab/PublicTab";
 import UserTab from "./UserTab/UserTab";
 import { Container, Flex, Tabs, Text } from "@mantine/core";
-import { IconBallTennis } from "@tabler/icons-react";
 import classes from "./App.module.less";
 import UserSelect from "./UserSelect";
 
@@ -21,10 +20,10 @@ export function App() {
 
     return (
         <div className={classes.header}>
-            <Container size="md">
+            <Container size="lg">
                 <Flex justify="space-between" align="baseline">
                     <Text size={28} className={classes.title}>
-                        <IconBallTennis size={32} /> Tennis Hub
+                        Tennis Hub 🎾
                     </Text>
                     <UserSelect users={users} setUserId={setUserId} />
                 </Flex>

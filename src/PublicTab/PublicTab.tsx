@@ -45,6 +45,7 @@ const PublicTab = ({ users, userid }: PulicTabProps) => {
                     );
                     return (
                         <ModelCard
+                            edit={file.userid === userid}
                             src={file.org_video_url}
                             newSrc={file.new_video_url}
                             key={file.assetid}

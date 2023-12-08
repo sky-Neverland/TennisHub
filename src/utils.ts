@@ -118,7 +118,6 @@ export const getUserVideos: (
         ).then((response) => {
             if (response.status === 200)
                 response.json().then(({ data }: IFileResponse) => {
-                    console.log(data);
                     data && setFiles((files) => files && [...data, ...files]);
                     setLoading(false);
                 });
@@ -158,7 +157,6 @@ export const deleteVideo: (
 export const changeVisibility: (
     setPublicFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
     setUserFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
-    publicFiles: IFile[],
     userFiles: IFile[],
     assetid: string,
     userid: string,
@@ -166,7 +164,6 @@ export const changeVisibility: (
 ) => void = async (
     setPublicFiles,
     setUserFiles,
-    publicFiles,
     userFiles,
     assetid,
     userid,
@@ -214,9 +211,7 @@ export const changeVisibility: (
                         )
                     );
                 } else {
-                    setPublicFiles((files) =>
-                        files.filter((f) => f.assetid !== assetid)
-                    );
+                    throw new Error("Change invalid");
                 }
             } else throw new Error("Change Visibility Failed");
         });
@@ -226,11 +221,18 @@ export const changeVisibility: (
 };
 
 export const trackVideo: (
-    setFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
+    setPublicFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
+    setUserFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
     userid: string,
     assetid: string,
     setShowTrack: React.Dispatch<React.SetStateAction<boolean>>
-) => void = async (setFiles, userid, assetid, setShowTrack) => {
+) => void = async (
+    setPublicFiles,
+    setUserFiles,
+    userid,
+    assetid,
+    setShowTrack
+) => {
     const requestOptions: RequestInit = {
         method: "POST",
         headers: {
@@ -238,7 +240,14 @@ export const trackVideo: (
         },
     };
     try {
-        setFiles((files) =>
+        setPublicFiles((files) =>
+            files.map((f) =>
+                f.assetid === assetid
+                    ? { ...f, tracked: TrackState.PENDING }
+                    : f
+            )
+        );
+        setUserFiles((files) =>
             files.map((f) =>
                 f.assetid === assetid
                     ? { ...f, tracked: TrackState.PENDING }
@@ -252,7 +261,15 @@ export const trackVideo: (
             if (response.status === 200)
                 response.json().then(({ data }: IFileResponse) => {
                     data &&
-                        setFiles((files) =>
+                        setPublicFiles((files) =>
+                            [...data, ...files].map((f) =>
+                                f.assetid === assetid
+                                    ? { ...f, tracked: TrackState.DONE }
+                                    : f
+                            )
+                        );
+                    data &&
+                        setUserFiles((files) =>
                             [...data, ...files].map((f) =>
                                 f.assetid === assetid
                                     ? { ...f, tracked: TrackState.DONE }
@@ -265,7 +282,12 @@ export const trackVideo: (
         });
     } catch (e) {
         console.log(e);
-        setFiles((files) =>
+        setPublicFiles((files) =>
+            files.map((f) =>
+                f.assetid === assetid ? { ...f, tracked: TrackState.FAILED } : f
+            )
+        );
+        setUserFiles((files) =>
             files.map((f) =>
                 f.assetid === assetid ? { ...f, tracked: TrackState.FAILED } : f
             )

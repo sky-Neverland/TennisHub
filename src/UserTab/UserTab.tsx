@@ -56,6 +56,7 @@ const UserTab = ({ userid }: PrivateTabProps) => {
                     {files.map((file) => {
                         return (
                             <ModelCard
+                                edit
                                 src={file.org_video_url}
                                 newSrc={file.new_video_url}
                                 key={file.assetid}

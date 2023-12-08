@@ -14,7 +14,7 @@ const PrivateButton: FC<PrivateButtonProps> = ({
     userid,
     isPublic,
 }) => {
-    const { setPublicFiles, setUserFiles, publicFiles, userFiles } = useContext(TabContext);
+    const { setPublicFiles, setUserFiles, userFiles } = useContext(TabContext);
     return (
         <Button
             color="gray"
@@ -28,7 +28,6 @@ const PrivateButton: FC<PrivateButtonProps> = ({
                 changeVisibility(
                     setPublicFiles,
                     setUserFiles,
-                    publicFiles,
                     userFiles,
                     assetid,
                     userid,

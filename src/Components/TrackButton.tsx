@@ -1,36 +1,42 @@
-import React, { FC } from "react";
+import React, { FC, useContext } from "react";
 import { Button, Text } from "@mantine/core";
 import { IconDeviceAnalytics } from "@tabler/icons-react";
 import { trackVideo } from "../utils";
 import { IFile, TrackState } from "../types";
+import { TabContext } from "../TabContext";
 
 export interface TrackButtonProps {
-    setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     assetid: string;
     userid: string;
-    disabled?: boolean;
     track: TrackState;
     showTrack?: boolean;
     setShowTrack?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 const TrackButton: FC<TrackButtonProps> = ({
-    setFiles,
     assetid,
     userid,
-    disabled,
     track,
     showTrack,
     setShowTrack,
 }) => {
+    const { setPublicFiles, setUserFiles, userFiles } = useContext(TabContext);
     const onChange = () => {
         if (track === TrackState.DONE)
             setShowTrack && setShowTrack((prev) => !prev);
         else
-            setShowTrack && trackVideo(setFiles, assetid, userid, setShowTrack);
+            setShowTrack &&
+                trackVideo(
+                    setPublicFiles,
+                    setUserFiles,
+                    userid,
+                    assetid,
+                    setShowTrack
+                );
     };
+
     return (
         <Button
-            disabled={disabled}
+            disabled={track === TrackState.PENDING}
             color="gray"
             size="compact-xs"
             title={showTrack ? "View untracked" : "Track"}

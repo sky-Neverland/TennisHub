@@ -70,6 +70,7 @@ interface ArticleCardProps
     author?: string;
     src: string;
     newSrc?: string;
+    edit?: boolean;
 }
 
 const ArticleCard = ({
@@ -85,6 +86,7 @@ const ArticleCard = ({
     userid,
     isPublic,
     track,
+    edit,
     ...others
 }: ArticleCardProps &
     Omit<React.ComponentPropsWithoutRef<"div">, keyof ArticleCardProps>) => {
@@ -119,20 +121,12 @@ const ArticleCard = ({
                 </Badge>
             )}
             {track === TrackState.PENDING && (
-                <Badge
-                    className={classes.track}
-                    variant="outline"
-                    color="gray"
-                >
+                <Badge className={classes.track} variant="outline" color="gray">
                     {track}
                 </Badge>
             )}
             {track === TrackState.UNTRACKED && (
-                <Badge
-                    className={classes.track}
-                    variant="outline"
-                    color="blue"
-                >
+                <Badge className={classes.track} variant="outline" color="blue">
                     {track}
                 </Badge>
             )}
@@ -148,23 +142,26 @@ const ArticleCard = ({
                     </Text>
                 )}
                 <TrackButton
-                    setFiles={setFiles}
                     assetid={assetid}
                     userid={userid}
                     showTrack={showTrack}
                     setShowTrack={setShowTrack}
                     track={track}
                 />
-                <PrivateButton
-                    assetid={assetid}
-                    userid={userid}
-                    isPublic={isPublic}
-                />
-                <DeleteButton
-                    setFiles={setFiles}
-                    assetid={assetid}
-                    userid={userid}
-                />
+                {edit && (
+                    <>
+                        <PrivateButton
+                            assetid={assetid}
+                            userid={userid}
+                            isPublic={isPublic}
+                        />
+                        <DeleteButton
+                            setFiles={setFiles}
+                            assetid={assetid}
+                            userid={userid}
+                        />
+                    </>
+                )}
             </Flex>
 
             {author && (

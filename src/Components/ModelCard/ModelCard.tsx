@@ -70,7 +70,6 @@ interface ArticleCardProps
     author?: string;
     src: string;
     newSrc?: string;
-    isPublicPage?: boolean;
 }
 
 const ArticleCard = ({
@@ -86,7 +85,6 @@ const ArticleCard = ({
     userid,
     isPublic,
     track,
-    isPublicPage,
     ...others
 }: ArticleCardProps &
     Omit<React.ComponentPropsWithoutRef<"div">, keyof ArticleCardProps>) => {
@@ -158,8 +156,6 @@ const ArticleCard = ({
                     track={track}
                 />
                 <PrivateButton
-                    isPublicPage = {isPublicPage}
-                    setFiles={setFiles}
                     assetid={assetid}
                     userid={userid}
                     isPublic={isPublic}

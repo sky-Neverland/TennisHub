@@ -1,14 +1,16 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import { ModelCard, HeaderSearch, Grid, Dropzone } from "../Components";
 import { getPulicVideos, uploadVideo } from "../utils";
-import { IFile, IUser, UploadState, IUploadRequest } from "../types";
+import { IUser, UploadState, IUploadRequest } from "../types";
+import { TabContext } from "../TabContext";
 interface PulicTabProps {
     users: IUser[];
     userid: string;
 }
 const PublicTab = ({ users, userid }: PulicTabProps) => {
     const [value, setValue] = useState<string>("");
-    const [files, setFiles] = useState<IFile[]>([]);
+    const { publicFiles: files, setPublicFiles: setFiles } =
+        useContext(TabContext);
     const renderRef = useRef(true);
     const [loading, setLoading] = useState<boolean>(false);
     const [uploadState, setUploadState] = useState<UploadState>(
@@ -43,7 +45,6 @@ const PublicTab = ({ users, userid }: PulicTabProps) => {
                     );
                     return (
                         <ModelCard
-                            isPublicPage
                             src={file.org_video_url}
                             newSrc={file.new_video_url}
                             key={file.assetid}

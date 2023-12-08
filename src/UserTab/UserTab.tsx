@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Flex, Text, Box, LoadingOverlay } from "@mantine/core";
 import { ModelCard, HeaderSearch, Dropzone, Grid } from "../Components";
 import { uploadVideo, getUserVideos } from "../utils";
-import { IFile, IUploadRequest, UploadState, TrackState } from "../types";
+import { IUploadRequest, UploadState, TrackState } from "../types";
 import { IconAlertTriangle, IconVideoOff } from "@tabler/icons-react";
-
+import { TabContext } from "../TabContext";
 interface PrivateTabProps {
     userid?: string;
 }
 const UserTab = ({ userid }: PrivateTabProps) => {
     const [value, setValue] = useState<string>("");
-    const [files, setFiles] = useState<IFile[]>([]);
+    const { userFiles: files, setUserFiles: setFiles } = useContext(TabContext);
     const [loading, setLoading] = useState<boolean>(false);
     const [uploadState, setUploadState] = useState<UploadState>(
         UploadState.IDLE

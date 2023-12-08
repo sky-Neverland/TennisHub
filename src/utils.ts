@@ -156,12 +156,22 @@ export const deleteVideo: (
 };
 
 export const changeVisibility: (
-    setFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
+    setPublicFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
+    setUserFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
+    publicFiles: IFile[],
+    userFiles: IFile[],
     assetid: string,
     userid: string,
-    isPublic?: boolean,
-    isPublicPage?: boolean
-) => void = async (setFiles, assetid, userid, isPublic, isPublicPage) => {
+    isPublic?: boolean
+) => void = async (
+    setPublicFiles,
+    setUserFiles,
+    publicFiles,
+    userFiles,
+    assetid,
+    userid,
+    isPublic
+) => {
     const requestOptions: RequestInit = {
         method: "PUT",
         headers: {
@@ -182,18 +192,32 @@ export const changeVisibility: (
             requestOptions
         ).then((response) => {
             if (response.status === 200) {
-                if (isPublicPage)
-                    setFiles((files) =>
-                        files.filter((f) =>  f.assetid !== assetid)
-                    );
-                else
-                    setFiles((files) =>
+                const fileChanged = userFiles.find(
+                    (f) => f.assetid === assetid
+                );
+                if (fileChanged) {
+                    if (fileChanged.public)
+                        setPublicFiles((files) =>
+                            files.filter((f) => f.assetid !== assetid)
+                        );
+                    else
+                        setPublicFiles((files) => [
+                            ...files,
+                            { ...fileChanged, public: !fileChanged.public },
+                        ]);
+
+                    setUserFiles((files) =>
                         files.map((f) =>
                             f.assetid === assetid
                                 ? { ...f, public: !f.public }
                                 : f
                         )
                     );
+                } else {
+                    setPublicFiles((files) =>
+                        files.filter((f) => f.assetid !== assetid)
+                    );
+                }
             } else throw new Error("Change Visibility Failed");
         });
     } catch (e) {

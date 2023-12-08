@@ -10,7 +10,11 @@ interface PrivateTabProps {
 }
 const UserTab = ({ userid }: PrivateTabProps) => {
     const [value, setValue] = useState<string>("");
-    const { userFiles: files, setUserFiles: setFiles } = useContext(TabContext);
+    const {
+        userFiles: files,
+        setUserFiles: setFiles,
+        setPublicFiles,
+    } = useContext(TabContext);
     const [loading, setLoading] = useState<boolean>(false);
     const [uploadState, setUploadState] = useState<UploadState>(
         UploadState.IDLE
@@ -18,7 +22,14 @@ const UserTab = ({ userid }: PrivateTabProps) => {
     const onDrop = (newFile: IUploadRequest) => {
         setUploadState(UploadState.IDLE);
         userid &&
-            uploadVideo(setFiles, setLoading, setUploadState, newFile, userid);
+            uploadVideo(
+                setPublicFiles,
+                setFiles,
+                setLoading,
+                setUploadState,
+                newFile,
+                userid
+            );
     };
     useEffect(() => {
         setFiles([]);
@@ -63,7 +74,6 @@ const UserTab = ({ userid }: PrivateTabProps) => {
                                 title={file.assetname}
                                 display={file.assetname.includes(value)}
                                 track={file.tracked}
-                                setFiles={setFiles}
                                 assetid={file.assetid}
                                 userid={file.userid}
                                 isPublic={file.public}

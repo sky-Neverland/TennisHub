@@ -20,6 +20,7 @@ export const uploadVideo: (
         method: "POST",
         headers: {
             accept: "application/json",
+            "Content-Type": "application/json",
         },
         body: JSON.stringify(newFile),
     };
@@ -33,6 +34,7 @@ export const uploadVideo: (
                 response.json().then(({ data }: IFileResponse) => {
                     data && setFile((file) => file && [...data, ...file]);
                     setLoading(false);
+                    setUploadState(UploadState.DONE);
                 });
             else throw new Error("Upload Failed");
         });
@@ -111,6 +113,31 @@ export const getUserVideos: (
                     data && setFile((file) => file && [...data, ...file]);
                 });
             else throw new Error("Get User Videos Failed");
+        });
+    } catch (e) {
+        console.log(e);
+    }
+};
+
+export const deleteVideo: (
+    setFile: React.Dispatch<React.SetStateAction<IFile[]>>,
+    assetid: string,
+    userid: string
+) => void = async (setFile, assetid, userid) => {
+    const requestOptions: RequestInit = {
+        method: "DELETE",
+        headers: {
+            accept: "application/json",
+        },
+    };
+    try {
+        await fetch(
+            RDS_URL + RDS_API.DELETE_VIDEO + "/" + userid + "/" + assetid,
+            requestOptions
+        ).then((response) => {
+            if (response.status === 200) {
+                setFile((file) => file.filter((f) => f.assetid !== assetid));
+            } else throw new Error("Delete Video Failed");
         });
     } catch (e) {
         console.log(e);

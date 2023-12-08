@@ -4,14 +4,15 @@ import {
     Card,
     Image,
     Text,
-    ActionIcon,
     Badge,
     Group,
     Center,
-    Avatar,
     createStyles,
     rem,
+    Flex,
 } from "@mantine/core";
+import { TrackState } from "../types";
+import { IconUser } from "@tabler/icons-react";
 
 const useStyles = createStyles((theme) => ({
     card: {
@@ -29,8 +30,9 @@ const useStyles = createStyles((theme) => ({
 
     title: {
         display: "block",
-        marginTop: theme.spacing.md,
-        marginBottom: rem(5),
+        width: "100%",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
     },
 
     action: {
@@ -56,12 +58,9 @@ interface ArticleCardProps {
     image?: string;
     link?: string;
     title?: string;
-    description?: string;
     rating?: string;
-    author?: {
-        name: string;
-        image: string;
-    };
+    author?: string;
+    deleteButton?: React.ReactNode;
 }
 
 const ArticleCard = ({
@@ -70,23 +69,17 @@ const ArticleCard = ({
     image,
     link,
     title,
-    description,
     author,
     rating,
     children,
+    deleteButton,
     ...others
 }: ArticleCardProps &
     Omit<React.ComponentPropsWithoutRef<"div">, keyof ArticleCardProps>) => {
     const { classes, cx, theme } = useStyles();
-    const linkProps = {
-        href: link,
-        target: "_blank",
-        rel: "noopener noreferrer",
-    };
-
     return (
         <Card
-            style={{display: display ? "block" : "none"}}
+            style={{ display: display ? "block" : "none" }}
             withBorder
             radius="md"
             className={cx(classes.card, className)}
@@ -94,13 +87,11 @@ const ArticleCard = ({
         >
             {image && (
                 <Card.Section>
-                    <a {...linkProps}>
-                        <Image src={image} height={180} />
-                    </a>
+                    <Image src={image} height={180} />
                 </Card.Section>
             )}
             <Card.Section>{children} </Card.Section>
-            {rating && (
+            {rating === TrackState.DONE && (
                 <Badge
                     className={classes.rating}
                     variant="gradient"
@@ -109,52 +100,43 @@ const ArticleCard = ({
                     {rating}
                 </Badge>
             )}
-            {title && (
-                <Text
-                    className={classes.title}
-                    fw={500}
-                    component="a"
-                    {...linkProps}
+            {rating === TrackState.PENDING && (
+                <Badge
+                    className={classes.rating}
+                    variant="outline"
+                    color="gray"
                 >
-                    {title}
-                </Text>
+                    {rating}
+                </Badge>
             )}
+            {rating === TrackState.UNTRACKED && (
+                <Badge
+                    className={classes.rating}
+                    variant="outline"
+                    color="blue"
+                >
+                    {rating}
+                </Badge>
+            )}
+            <Flex justify="space-between" align="center">
+                {title && (
+                    <Text className={classes.title} fw={500}>
+                        {title}
+                    </Text>
+                )}
+                {deleteButton}
+            </Flex>
 
-            {description && (
-                <Text fz="sm" color="dimmed" lineClamp={4}>
-                    {description}
-                </Text>
-            )}
-            <Group position="apart" className={classes.footer}>
-                {author && (
+            {author && (
+                <Group position="apart" className={classes.footer}>
                     <Center>
-                        <Avatar
-                            src={author.image}
-                            size={24}
-                            radius="xl"
-                            mr="xs"
-                        />
-
-                        <Text fz="sm" inline>
-                            {author.name}
+                        <IconUser size={16} />
+                        <Text fz="sm" ml="sm" inline>
+                            {author}
                         </Text>
                     </Center>
-                )}
-                {/* <Group spacing={8} mr={0}>
-                    <ActionIcon className={classes.action}>
-                        <IconHeart size="16px" color={theme.colors.red[6]} />
-                    </ActionIcon>
-                    <ActionIcon className={classes.action}>
-                        <IconBookmark
-                            size="16px"
-                            color={theme.colors.yellow[7]}
-                        />
-                    </ActionIcon>
-                    <ActionIcon className={classes.action}>
-                        <IconShare size="16px" />
-                    </ActionIcon>
-                </Group> */}
-            </Group>
+                </Group>
+            )}
         </Card>
     );
 };

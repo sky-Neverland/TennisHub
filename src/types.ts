@@ -1,7 +1,7 @@
 export enum TrackState {
     UNTRACKED = "untracked",
     PENDING = "pending",
-    DONE = "done",
+    DONE = "tracked",
 }
 
 export interface IFile {
@@ -43,6 +43,7 @@ export enum RDS_API {
     LIST_USER_VIDEOS = "/list_user_videos",
     GET_USERS = "/users",
     UPLOAD_VIDEO = "/upload_org_video",
+    DELETE_VIDEO = "/delete_all",
 }
 
 export enum UploadState {

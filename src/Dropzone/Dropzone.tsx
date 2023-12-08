@@ -43,7 +43,8 @@ const Dropzone: FC<{
     loading?: boolean;
     disabled?: boolean;
     uploadState?: string;
-}> = ({ onDrop, loading, disabled, uploadState }) => {
+    isPublic?: boolean;
+}> = ({ onDrop, loading, disabled, uploadState, isPublic }) => {
     const { classes, theme } = useStyles();
     const openRef = useRef<() => void>(null);
     const [files, setFiles] = useState<FileWithPath[]>([]);
@@ -55,7 +56,7 @@ const Dropzone: FC<{
             const data = await toBase64(newFile);
             onDrop({
                 assetname: newFile.name,
-                isPublic: false,
+                isPublic: !!isPublic,
                 data: data.replace("data:video/mp4;base64,", ""),
             });
         } catch (e) {

@@ -1,7 +1,8 @@
 export enum TrackState {
     UNTRACKED = "untracked",
     PENDING = "pending",
-    DONE = "done",
+    DONE = "tracked",
+    FAILED = "failed",
 }
 
 export interface IFile {
@@ -9,7 +10,7 @@ export interface IFile {
     userid: string;
     assetname: string;
     tracked: TrackState;
-    isPublic: boolean;
+    public: boolean;
     org_video_url: string;
     new_video_url: string;
 }
@@ -43,6 +44,8 @@ export enum RDS_API {
     LIST_USER_VIDEOS = "/list_user_videos",
     GET_USERS = "/users",
     UPLOAD_VIDEO = "/upload_org_video",
+    DELETE_VIDEO = "/delete_all",
+    CHANGE_VISIBILITY = "/change_visibility",
 }
 
 export enum UploadState {

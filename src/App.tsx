@@ -2,7 +2,7 @@ import { getUsers } from "./utils";
 import { IUser } from "./types";
 import React, { useState, useRef, useEffect } from "react";
 import PublicTab from "./PublicTab/PublicTab";
-import PrivateTab from "./PrivateTab/PrivateTab";
+import UserTab from "./UserTab/UserTab";
 import { Container, Flex, Tabs, Text } from "@mantine/core";
 import { IconBallTennis } from "@tabler/icons-react";
 import classes from "./App.module.less";
@@ -11,7 +11,7 @@ import UserSelect from "./UserSelect";
 export function App() {
     const [users, setUsers] = useState<IUser[]>([]);
     const renderRef = useRef(true);
-    const [userId, setUserId] = useState<string>("");
+    const [userid, setUserId] = useState<string>("");
     useEffect(() => {
         if (renderRef.current) getUsers(setUsers);
         return () => {
@@ -34,15 +34,15 @@ export function App() {
                     <Tabs.List>
                         <Tabs.Tab value="public">Public videos</Tabs.Tab>
 
-                        <Tabs.Tab value="private">Private videos</Tabs.Tab>
+                        <Tabs.Tab value="user">User videos</Tabs.Tab>
                     </Tabs.List>
 
                     <Tabs.Panel value="public">
-                        <PublicTab />
+                        <PublicTab users={users} userid={userid} />
                     </Tabs.Panel>
 
-                    <Tabs.Panel value="private">
-                        <PrivateTab userId={userId} />
+                    <Tabs.Panel value="user">
+                        <UserTab userid={userid} />
                     </Tabs.Panel>
                 </Tabs>
             </Container>

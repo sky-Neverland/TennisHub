@@ -1,16 +1,28 @@
-import React, { useState, useEffect, useRef } from "react";
-import ModelCard from "../ModelCard/ModelCard";
-import HeaderSearch from "../HeaderSearch/HeaderSearch";
-import Grid from "../Grid/Grid";
-import { getPulicVideos } from "../utils";
-import { IFile, TrackState } from "../types";
-
-const PublicTab = () => {
-    const [value, setValue] = useState("");
-    const [file, setFile] = useState<IFile[]>([]);
+import React, { useState, useEffect, useRef, useContext } from "react";
+import { ModelCard, HeaderSearch, Grid, Dropzone } from "../Components";
+import { getPulicVideos, uploadVideo } from "../utils";
+import { IUser, UploadState, IUploadRequest } from "../types";
+import { TabContext } from "../TabContext";
+interface PulicTabProps {
+    users: IUser[];
+    userid: string;
+}
+const PublicTab = ({ users, userid }: PulicTabProps) => {
+    const [value, setValue] = useState<string>("");
+    const { publicFiles: files, setPublicFiles: setFiles } =
+        useContext(TabContext);
     const renderRef = useRef(true);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [uploadState, setUploadState] = useState<UploadState>(
+        UploadState.IDLE
+    );
+    const onDrop = (newFile: IUploadRequest) => {
+        setUploadState(UploadState.IDLE);
+        userid &&
+            uploadVideo(setFiles, setLoading, setUploadState, newFile, userid);
+    };
     useEffect(() => {
-        if (renderRef.current) getPulicVideos(setFile);
+        if (renderRef.current) getPulicVideos(setFiles, setLoading);
         return () => {
             renderRef.current = false;
         };
@@ -18,33 +30,34 @@ const PublicTab = () => {
 
     return (
         <div>
-            <HeaderSearch setValue={setValue} data={file} />
+            <HeaderSearch setValue={setValue} data={files} />
+            <Dropzone
+                onDrop={onDrop}
+                loading={loading}
+                disabled={!!!userid}
+                uploadState={uploadState}
+                isPublic={true}
+            />
             <Grid>
-                {file.map((file) => {
+                {files.map((file) => {
+                    const user = users.find(
+                        (user) => user.userid === file.userid
+                    );
                     return (
                         <ModelCard
+                            edit={file.userid === userid}
+                            src={file.org_video_url}
+                            newSrc={file.new_video_url}
                             key={file.assetid}
                             title={file.assetname}
                             display={file.assetname.includes(value)}
-                        >
-                            <iframe
-                                src={file.org_video_url}
-                                title="YouTube video player"
-                                style={{ border: 0 }}
-                                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                allowFullScreen
-                            ></iframe>
-
-                            {file.tracked === TrackState.DONE && (
-                                <iframe
-                                    src={file.new_video_url}
-                                    title="YouTube video player"
-                                    style={{ border: 0 }}
-                                    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                    allowFullScreen
-                                ></iframe>
-                            )}
-                        </ModelCard>
+                            track={file.tracked}
+                            author={user?.lastname + " " + user?.firstname}
+                            isPublic
+                            setFiles={setFiles}
+                            assetid={file.assetid}
+                            userid={file.userid}
+                        />
                     );
                 })}
             </Grid>

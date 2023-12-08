@@ -9,7 +9,7 @@ import {
     IconUserOff,
 } from "@tabler/icons-react";
 import Preview from "./Preview/Preview";
-import { IUploadRequest, UploadState } from "../types";
+import { IUploadRequest, UploadState } from "../../types";
 
 const MAX_SIZE = 8; // File size in MB
 const useStyles = createStyles((theme) => ({
@@ -43,7 +43,8 @@ const Dropzone: FC<{
     loading?: boolean;
     disabled?: boolean;
     uploadState?: string;
-}> = ({ onDrop, loading, disabled, uploadState }) => {
+    isPublic?: boolean;
+}> = ({ onDrop, loading, disabled, uploadState, isPublic }) => {
     const { classes, theme } = useStyles();
     const openRef = useRef<() => void>(null);
     const [files, setFiles] = useState<FileWithPath[]>([]);
@@ -55,7 +56,7 @@ const Dropzone: FC<{
             const data = await toBase64(newFile);
             onDrop({
                 assetname: newFile.name,
-                isPublic: false,
+                isPublic: !!isPublic,
                 data: data.replace("data:video/mp4;base64,", ""),
             });
         } catch (e) {
@@ -86,7 +87,8 @@ const Dropzone: FC<{
                         />
                     </Drop.Reject>
                     <Drop.Idle>
-                        {files.length > 0 ? (
+                        {files.length > 0 &&
+                        uploadState !== UploadState.DONE ? (
                             files.map((file, idx) => (
                                 <Preview
                                     key={idx.toString()}

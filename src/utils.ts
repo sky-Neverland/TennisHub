@@ -25,37 +25,37 @@ export const uploadVideo: (
     newFile,
     userid
 ) => {
-    const requestOptions: RequestInit = {
-        method: "POST",
-        headers: {
-            accept: "application/json",
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newFile),
+        const requestOptions: RequestInit = {
+            method: "POST",
+            headers: {
+                accept: "application/json",
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(newFile),
+        };
+        try {
+            setLoading(true);
+            await fetch(
+                RDS_URL + RDS_API.UPLOAD_VIDEO + "/" + userid,
+                requestOptions
+            ).then((response) => {
+                if (response.status === 200)
+                    response.json().then(({ data }: IFileResponse) => {
+                        data &&
+                            newFile.isPublic &&
+                            setPublicFiles((files) => files && [...data, ...files]);
+                        data && setUserFiles((files) => [...data, ...files]);
+                        setLoading(false);
+                        setUploadState(UploadState.DONE);
+                    });
+                else throw new Error("Upload Failed");
+            });
+        } catch (e) {
+            console.log(e);
+            setLoading(false);
+            setUploadState(UploadState.FAILED);
+        }
     };
-    try {
-        setLoading(true);
-        await fetch(
-            RDS_URL + RDS_API.UPLOAD_VIDEO + "/" + userid,
-            requestOptions
-        ).then((response) => {
-            if (response.status === 200)
-                response.json().then(({ data }: IFileResponse) => {
-                    data &&
-                        newFile.isPublic &&
-                        setPublicFiles((files) => files && [...data, ...files]);
-                    data && setUserFiles((files) => [...data, ...files]);
-                    setLoading(false);
-                    setUploadState(UploadState.DONE);
-                });
-            else throw new Error("Upload Failed");
-        });
-    } catch (e) {
-        console.log(e);
-        setLoading(false);
-        setUploadState(UploadState.FAILED);
-    }
-};
 
 export const getPulicVideos: (
     setFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
@@ -187,16 +187,16 @@ export const changeVisibility: (
     userid,
     isPublic
 ) => {
-    const requestOptions: RequestInit = {
-        method: "PUT",
-        headers: {
-            accept: "application/json",
-        },
-        body: JSON.stringify({ isPublic: !!isPublic }),
-    };
-    try {
-        await fetch(
-            RDS_URL +
+        const requestOptions: RequestInit = {
+            method: "PUT",
+            headers: {
+                accept: "application/json",
+            },
+            body: JSON.stringify({ isPublic: !!isPublic }),
+        };
+        try {
+            await fetch(
+                RDS_URL +
                 RDS_API.CHANGE_VISIBILITY +
                 "/" +
                 userid +
@@ -204,39 +204,39 @@ export const changeVisibility: (
                 assetid +
                 "/" +
                 (!!!isPublic).toString(),
-            requestOptions
-        ).then((response) => {
-            if (response.status === 200) {
-                const fileChanged = userFiles.find(
-                    (f) => f.assetid === assetid
-                );
-                if (fileChanged) {
-                    if (fileChanged.public)
-                        setPublicFiles((files) =>
-                            files.filter((f) => f.assetid !== assetid)
-                        );
-                    else
-                        setPublicFiles((files) => [
-                            ...files,
-                            { ...fileChanged, public: !fileChanged.public },
-                        ]);
-
-                    setUserFiles((files) =>
-                        files.map((f) =>
-                            f.assetid === assetid
-                                ? { ...f, public: !f.public }
-                                : f
-                        )
+                requestOptions
+            ).then((response) => {
+                if (response.status === 200) {
+                    const fileChanged = userFiles.find(
+                        (f) => f.assetid === assetid
                     );
-                } else {
-                    throw new Error("Change invalid");
-                }
-            } else throw new Error("Change Visibility Failed");
-        });
-    } catch (e) {
-        console.log(e);
-    }
-};
+                    if (fileChanged) {
+                        if (fileChanged.public)
+                            setPublicFiles((files) =>
+                                files.filter((f) => f.assetid !== assetid)
+                            );
+                        else
+                            setPublicFiles((files) => [
+                                ...files,
+                                { ...fileChanged, public: !fileChanged.public },
+                            ]);
+
+                        setUserFiles((files) =>
+                            files.map((f) =>
+                                f.assetid === assetid
+                                    ? { ...f, public: !f.public }
+                                    : f
+                            )
+                        );
+                    } else {
+                        throw new Error("Change invalid");
+                    }
+                } else throw new Error("Change Visibility Failed");
+            });
+        } catch (e) {
+            console.log(e);
+        }
+    };
 
 export const trackVideo: (
     setPublicFiles: React.Dispatch<React.SetStateAction<IFile[]>>,
@@ -251,65 +251,65 @@ export const trackVideo: (
     assetid,
     setShowTrack
 ) => {
-    const requestOptions: RequestInit = {
-        method: "GET",
-        headers: {
-            accept: "application/json",
-        },
+        const requestOptions: RequestInit = {
+            method: "GET",
+            headers: {
+                accept: "application/json",
+            },
+        };
+        try {
+            setPublicFiles((files) =>
+                files.map((f) =>
+                    f.assetid === assetid
+                        ? { ...f, tracked: TrackState.PENDING }
+                        : f
+                )
+            );
+            setUserFiles((files) =>
+                files.map((f) =>
+                    f.assetid === assetid
+                        ? { ...f, tracked: TrackState.PENDING }
+                        : f
+                )
+            );
+            await fetch(
+                RDS_URL + RDS_API.TRACK_VIDEO + "/" + userid + "/" + assetid,
+                requestOptions
+            ).then((response) => {
+                if (response.status === 200)
+                    response.json().then(({ data }: IFileResponse) => {
+                        data &&
+                            setPublicFiles((files) =>
+                                files.map((f) =>
+                                    f.assetid === assetid
+                                        ? { ...f, tracked: TrackState.DONE, new_video_url: data[0].new_video_url }
+                                        : f
+                                )
+                            );
+                        data &&
+                            setUserFiles((files) =>
+                                files.map((f) =>
+                                    f.assetid === assetid
+                                        ? { ...f, tracked: TrackState.DONE, new_video_url: data[0].new_video_url }
+                                        : f
+                                )
+                            );
+                        setShowTrack(true);
+                    });
+                else throw new Error("Track Failed");
+            });
+        } catch (e) {
+            console.log(e);
+            setPublicFiles((files) =>
+                files.map((f) =>
+                    f.assetid === assetid ? { ...f, tracked: TrackState.FAILED } : f
+                )
+            );
+            setUserFiles((files) =>
+                files.map((f) =>
+                    f.assetid === assetid ? { ...f, tracked: TrackState.FAILED } : f
+                )
+            );
+            setShowTrack(false);
+        }
     };
-    try {
-        setPublicFiles((files) =>
-            files.map((f) =>
-                f.assetid === assetid
-                    ? { ...f, tracked: TrackState.PENDING }
-                    : f
-            )
-        );
-        setUserFiles((files) =>
-            files.map((f) =>
-                f.assetid === assetid
-                    ? { ...f, tracked: TrackState.PENDING }
-                    : f
-            )
-        );
-        await fetch(
-            RDS_URL + RDS_API.TRACK_VIDEO + "/" + userid + "/" + assetid,
-            requestOptions
-        ).then((response) => {
-            if (response.status === 200)
-                response.json().then(({ data }: IFileResponse) => {
-                    data &&
-                        setPublicFiles((files) =>
-                            [...data, ...files].map((f) =>
-                                f.assetid === assetid
-                                    ? { ...f, tracked: TrackState.DONE }
-                                    : f
-                            )
-                        );
-                    data &&
-                        setUserFiles((files) =>
-                            [...data, ...files].map((f) =>
-                                f.assetid === assetid
-                                    ? { ...f, tracked: TrackState.DONE }
-                                    : f
-                            )
-                        );
-                    setShowTrack(true);
-                });
-            else throw new Error("Track Failed");
-        });
-    } catch (e) {
-        console.log(e);
-        setPublicFiles((files) =>
-            files.map((f) =>
-                f.assetid === assetid ? { ...f, tracked: TrackState.FAILED } : f
-            )
-        );
-        setUserFiles((files) =>
-            files.map((f) =>
-                f.assetid === assetid ? { ...f, tracked: TrackState.FAILED } : f
-            )
-        );
-        setShowTrack(false);
-    }
-};

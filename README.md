@@ -41,30 +41,13 @@ node app.js
 access: [localhost:8080/stats](localhost:8080/stats)
 
 # APIs
-1. get `/users`. Return a list of users
-
-    example usage: `users` function in `client.py`.
-    
-1. put `/user`: add a user to the database.
-
-    example usage: `add_user` function in `client.py`.
-
-1. get `/list_public_videos`: return a list of all public videos.
-
-    example usage: `get_public_videos` function in `client.py`.
-
-1. get `/list_user_videos/:userid`: return all videos of a user.
-
-    example usage: `get_user_videos` function in `client.py`.
-
-1. get `/get_urls/:userid/:assetid`: check whether `userid` can get the video urls of `asssetid`. return urls if so.
-
-    example usage: `get_urls` function in `client.py`.
-
-1. post `/upload_org_video/:userid`, `userid` uploads the original video.
-
-    example usage: `upload_org_video` function in `client.py`.
-
-1. post `/upload_new_video/:assetid`, upload the new/tracked video of `assetid`.
-
-    example usage: `upload_new_video` function in `client.py`.
+1. app.get('/users', users.get_users);
+1. app.get('/list_public_videos', lists.list_public_videos);
+1. app.get('/list_user_videos/:userid', lists.list_user_videos);
+1. app.get('/get_urls/:userid/:assetid', links.get_urls);
+1. app.put('/user', user.put_user);
+1. app.post('/upload_org_video/:userid', upload.post_video);
+1. app.get('/track/:userid/:assetid', track.track);
+1. app.delete('/delete_all/:userid/:assetid', delete_.delete_all);
+1. app.delete('/delete_tracked/:userid/:assetid', delete_.delete_tracked);
+1. app.put('/change_visibility/:userid/:assetid/:ispublic', cv.change_visibility);

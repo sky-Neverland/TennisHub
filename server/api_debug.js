@@ -8,7 +8,7 @@
 //
 const dbConnection = require('./database.js')
 
-exports.put_user = async (req, res) => {
+exports.get_debug = async (req, res) => {
 
   console.log("call to /user...");
 
@@ -16,16 +16,15 @@ exports.put_user = async (req, res) => {
 
     var data = req.body;  // data => JS object
     console.log(data);
+
     sql = `
-      INSERT INTO tennishub.users (email, lastname, firstname, bucketfolder)
-      VALUES (?, ?, ?, ?)
-      ON DUPLICATE KEY UPDATE
-      email = VALUES(email),
-      lastname = VALUES(lastname),
-      firstname = VALUES(firstname),
-      bucketfolder = VALUES(bucketfolder);
-    `
-    params = [data.email, data.lastname, data.firstname, data.bucketfolder];
+        UPDATE tennishub.assets
+        SET new_bucketkey = ?,
+        tracked = ?
+        WHERE assetid = ?;
+    `;
+    new_key = "f9e46ca6-3d8f-4349-a881-a784b486e5ff/a0534439-0128-4768-a552-6b3fe7019c8a.mp4"
+    params = [new_key, "done", 1028];
 
     dbConnection.query(sql, params, (queryError, result) => {
       // handle query errors

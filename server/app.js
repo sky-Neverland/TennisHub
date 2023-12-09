@@ -35,6 +35,13 @@ const { HeadBucketCommand, ListObjectsV2Command } = require('@aws-sdk/client-s3'
 const { s3, s3_bucket_name, s3_region_name } = require('./aws.js');
 var startTime;
 
+app.all('*', function (req, res, next) {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Headers', '*');
+  res.set('Access-Control-Allow-Methods', '*');
+  next();
+});
+
 app.use(express.json({ strict: false, limit: "50mb" }));
 
 app.listen(config.service_port, () => {
@@ -57,25 +64,27 @@ app.get('/', (req, res) => {
   });
 });
 
-//
 // service functions:
-//
-// var stats = require('./api_stats.js');
 var users = require('./api_users.js');
 var lists = require('./api_lists.js');
-// var bucket = require('./api_bucket.js');
 var user = require('./api_user.js');
 var upload = require('./api_upload.js');
 var links = require('./api_links.js');
+var track = require('./api_track.js');
+var delete_ = require('./api_delete.js');
+var cv = require('./api_change_visibility.js');
+var debug = require('./api_debug.js');
 
-// app.get('/stats', stats.get_stats);  //app.get('/stats', (req, res) => {...});
-app.get('/users', users.get_users);  //app.get('/users', (req, res) => {...});
-app.get('/list_public_videos', lists.list_public_videos);  //app.get('/assets', (req, res) => {...});
-app.get('/list_user_videos/:userid', lists.list_user_videos);  //app.get('/assets', (req, res) => {...});
-// app.get('/list_user_video/:userid/:assetid', lists.list_user_videos);  //app.get('/assets', (req, res) => {...});
-// app.get('/bucket', bucket.get_bucket);  //app.get('/bucket?startafter=bucketkey', (req, res) => {...});
-app.get('/get_urls/:userid/:assetid', links.get_urls);  //app.get('/download/:userid/:assetid', (req, res) => {...});
+app.get('/users', users.get_users);
+app.get('/list_public_videos', lists.list_public_videos);
+app.get('/list_user_videos/:userid', lists.list_user_videos);
+app.get('/get_urls/:userid/:assetid', links.get_urls);
+app.put('/user', user.put_user);
+app.post('/upload_org_video/:userid', upload.post_video);
+// app.post('/upload_tracked_video/:userid:assetid', upload.post_tracked_video);
+app.get('/track/:userid/:assetid', track.track);
+app.delete('/delete_all/:userid/:assetid', delete_.delete_all);
+app.delete('/delete_tracked/:userid/:assetid', delete_.delete_tracked);
+app.put('/change_visibility/:userid/:assetid/:ispublic', cv.change_visibility);
 
-app.put('/user', user.put_user);  //app.put('/user', async (req, res) => {...});
-app.post('/upload_org_video/:userid', upload.post_video);  //app.post('/image/:userid', async (req, res) => {...});
-app.post('/upload_new_video/:assetid', upload.post_tracked_video);
+app.get('/debug', debug.get_debug);

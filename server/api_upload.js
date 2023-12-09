@@ -19,6 +19,7 @@ exports.post_video = async (req, res) => {
     var data = req.body;  // data => JS object
     // console.log(data.data);
 
+
     getBucketFolderRes = await getBucketFolder(userid);
     if (getBucketFolderRes.is_valid_user === 0) {
       throw new Error("no such user...");
@@ -27,8 +28,6 @@ exports.post_video = async (req, res) => {
     bucketfolder = getBucketFolderRes.bucketfolder;
     console.log(bucketfolder);
 
-    // re-construc the video bytes from the base64-encoded string:
-    // var video_bytes = data.data;
     var video_bytes = Buffer.from(data.data, 'base64');
 
     var new_local_name = uuid.v4();
@@ -57,7 +56,7 @@ exports.post_video = async (req, res) => {
                 tennishub.assets(userid, assetname, org_bucketkey, new_bucketkey, tracked, public)
                 values(?, ?, ?, ?, ?, ?);
             `
-        sql_params = [userid, data.assetname, bucket_key, dummy_new_bucket_key, "not started", data.isPublic];
+        sql_params = [userid, data.assetname, bucket_key, dummy_new_bucket_key, "untracked", data.isPublic];
         dbConnection.query(sql, sql_params, (err, results, _) => {
           try {
             if (err) {
@@ -90,23 +89,31 @@ exports.post_video = async (req, res) => {
 
         res.json({
           "message": "success",
-          "assetid": rds_results.insertId,
-          "bucketkey": bucket_key,
-          "url": `https://${s3_bucket_name}.s3.${s3_region_name}.amazonaws.com/${bucket_key}`,
+          "data": [{
+            "assetid": rds_results.insertId.toString(),
+            "userid": userid,
+            "assetname": data.assetname,
+            "org_bucketkey": bucket_key,
+            "new_bucketkey": "invalid-bucketkey",
+            "org_video_url": `https://${s3_bucket_name}.s3.${s3_region_name}.amazonaws.com/${bucket_key}`,
+            "new_video_url": "invalid-url",
+            "tracked": "untracked",
+            "public": data.isPublic,
+          },],
         });
       }
       catch (code_err) {
         console.log("Promise.all try catch err...");
         res.status(400).json({
           "message": code_err.message,
-          "assetid": -1,
+          "data": [],
         });
       }
     }).catch(err => {
       console.log("Promise.all err...");
       res.status(400).json({
         "message": err.message,
-        "assetid": -1,
+        "data": [],
       });
     });
   }//try
@@ -115,124 +122,124 @@ exports.post_video = async (req, res) => {
 
     res.status(400).json({
       "message": err.message,
-      "assetid": -1
+      "data": []
     });
   }//catch
 
 }//post org video
 
-exports.post_tracked_video = async (req, res) => {
+// exports.post_tracked_video = async (req, res) => {
 
-  console.log("call to /post_tracked_video...");
+//   console.log("call to /post_tracked_video...");
 
-  try {
-    const assetid = req.params.assetid;
-    var data = req.body;
-    getAssetInfoRes = await getAssetInfo(assetid);
-    if (getAssetInfoRes.valid === 0) {
-      throw new Error("invalid asset id...");
-    }
-    console.log(getAssetInfoRes.result);
+//   try {
+//     const assetid = req.params.assetid;
+//     var data = req.body;
+//     getAssetInfoRes = await getAssetInfo(assetid);
+//     if (getAssetInfoRes.valid === 0) {
+//       throw new Error("invalid asset id...");
+//     }
+//     console.log(getAssetInfoRes.result);
 
-    getBucketFolderRes = await getBucketFolder(getAssetInfoRes.result.userid);
-    if (getBucketFolderRes.is_valid_user === 0) {
-      throw new Error("no such user...");
-    }
+//     getBucketFolderRes = await getBucketFolder(getAssetInfoRes.result.userid);
+//     if (getBucketFolderRes.is_valid_user === 0) {
+//       throw new Error("no such user...");
+//     }
 
-    bucketfolder = getBucketFolderRes.bucketfolder;
+//     bucketfolder = getBucketFolderRes.bucketfolder;
 
-    // re-construc the video bytes from the base64-encoded string:
-    // var video_bytes = data.data;
-    var video_bytes = Buffer.from(data.data, 'base64');
+//     // re-construc the video bytes from the base64-encoded string:
+//     // var video_bytes = data.data;
+//     var video_bytes = Buffer.from(data.data, 'base64');
 
-    var new_local_name = uuid.v4();
-    var bucket_key = `${bucketfolder}/${new_local_name}.mp4`;
+//     var new_local_name = uuid.v4();
+//     var bucket_key = `${bucketfolder}/${new_local_name}.mp4`;
 
-    console.log(`bucket_key is ${bucket_key}`);
+//     console.log(`bucket_key is ${bucket_key}`);
 
-    const command = new PutObjectCommand({
-      Bucket: s3_bucket_name,
-      Key: bucket_key,
-      Body: video_bytes,
-      ACL: 'public-read',
-      ContentType: 'video/mp4',
-    });
+//     const command = new PutObjectCommand({
+//       Bucket: s3_bucket_name,
+//       Key: bucket_key,
+//       Body: video_bytes,
+//       ACL: 'public-read',
+//       ContentType: 'video/mp4',
+//     });
 
-    s3_promise = s3.send(command);
+//     s3_promise = s3.send(command);
 
 
 
-    var rds_promise = new Promise((resolve, reject) => {
-      try {
-        console.log("upload_org: calling RDS...");
-        sql = `
-          UPDATE tennishub.assets
-          SET new_bucketkey = ? ,
-          tracked = ?
-          WHERE assetid = ?;
-        `
-        sql_params = [bucket_key, "done", assetid];
-        dbConnection.query(sql, sql_params, (err, results, _) => {
-          try {
-            if (err) {
-              console.log("upload_new: rejected RDS promise...");
-              reject(err);
-              return;
-            }
-            console.log("upload_new: before resolve...");
-            resolve(results);
-          }
-          catch (code_err) {
-            console.log("upload_new: error in db query...");
-            reject(code_err);
-          }
-        });
-      }
-      catch (code_err) {
-        console.log("upload_new: error in db query 22...");
-        reject(code_err);
-      }
-    });
+//     var rds_promise = new Promise((resolve, reject) => {
+//       try {
+//         console.log("upload_org: calling RDS...");
+//         sql = `
+//           UPDATE tennishub.assets
+//           SET new_bucketkey = ? ,
+//           tracked = ?
+//           WHERE assetid = ?;
+//         `
+//         sql_params = [bucket_key, "done", assetid];
+//         dbConnection.query(sql, sql_params, (err, results, _) => {
+//           try {
+//             if (err) {
+//               console.log("upload_new: rejected RDS promise...");
+//               reject(err);
+//               return;
+//             }
+//             console.log("upload_new: before resolve...");
+//             resolve(results);
+//           }
+//           catch (code_err) {
+//             console.log("upload_new: error in db query...");
+//             reject(code_err);
+//           }
+//         });
+//       }
+//       catch (code_err) {
+//         console.log("upload_new: error in db query 22...");
+//         reject(code_err);
+//       }
+//     });
 
-    Promise.all([s3_promise, rds_promise]).then(results => {
-      try {
-        // we have a list of results, so break them apart:
-        console.log("Promise.all done...");
-        var s3_result = results[0];
-        var rds_results = results[1];
-        console.log("Promise done, sending response...");
+//     Promise.all([s3_promise, rds_promise]).then(results => {
+//       try {
+//         // we have a list of results, so break them apart:
+//         console.log("Promise.all done...");
+//         var s3_result = results[0];
+//         var rds_results = results[1];
+//         console.log("Promise done, sending response...");
 
-        res.json({
-          "message": "success",
-          "bucketkey": bucket_key,
-          "url": `https://${s3_bucket_name}.s3.${s3_region_name}.amazonaws.com/${bucket_key}`,
-        });
-      }
-      catch (code_err) {
-        console.log("Promise.all try catch err...");
-        res.status(400).json({
-          "message": code_err.message,
-          "assetid": -1,
-        });
-      }
-    }).catch(err => {
-      console.log("Promise.all err...");
-      res.status(400).json({
-        "message": err.message,
-        "assetid": -1,
-      });
-    });
-  }//try
-  catch (err) {
-    console.log("**ERROR:", err.message);
+//         res.json({
+//           "message": "success",
+//           "bucketkey": bucket_key,
+//           "url": `https://${s3_bucket_name}.s3.${s3_region_name}.amazonaws.com/${bucket_key}`,
+//         });
+//       }
+//       catch (code_err) {
+//         console.log("Promise.all try catch err...");
+//         res.status(400).json({
+//           "message": code_err.message,
+//           "assetid": -1,
+//         });
+//       }
+//     }).catch(err => {
+//       console.log("Promise.all err...");
+//       res.status(400).json({
+//         "message": err.message,
+//         "assetid": "-1",
+//       });
+//     });
+//   }//try
+//   catch (err) {
+//     console.log("**ERROR:", err.message);
 
-    res.status(400).json({
-      "message": err.message,
-      "assetid": -1
-    });
-  }//catch
+//     res.status(400).json({
+//       "message": err.message,
+//       "assetid": -1
+//     });
+//   }//catch
 
-}//post
+// }//post
 
 // async query the database to get the bucket folder of the user.
 //

@@ -18,6 +18,7 @@ sys.tracebacklimit = 0
 # configur = ConfigParser()
 # configur.read(config_file)
 baseurl = "http://tennis-hub-dhugz-eb-env.eba-9ewfn4s2.us-east-2.elasticbeanstalk.com"
+# baseurl = "http://localhost:8080"
 
 ###################################################################
 #
@@ -145,7 +146,6 @@ def upload_org_video(baseurl, userid, local_filename, isPublic=False):
         # the string as JSON for upload to server:
         data = base64.b64encode(video_bytes)
         datastr = data.decode()
-        print("datastr length:", len(datastr))
 
         # build the data packet:
         data = {"assetname": local_filename, "data": datastr, "isPublic": isPublic}
@@ -171,10 +171,11 @@ def upload_org_video(baseurl, userid, local_filename, isPublic=False):
 
         # success, extract userid:
         body = res.json()
-        assetid = body["assetid"]
-        print("Video uploaded, asset id =", assetid)
-        for key in body:
-            print(key, ":", body[key])
+        print(body)
+        # assetid = body["assetid"]
+        # print("Video uploaded, asset id =", assetid)
+        # for key in body:
+        #     print(key, ":", body[key])
 
 
     except Exception as e:
@@ -345,12 +346,102 @@ def upload_new_video(baseurl, assetid, local_filename):
         for key in body:
             print(key, ":", body[key])
 
-
     except Exception as e:
         logging.error("upload_new_video() failed:")
         logging.error("url: " + url)
         logging.error(e)
     return
+
+def delete_record(baseurl, userid, assetid, trackedOnly=False):
+    try:
+        # call the web service:
+        if trackedOnly:
+            api = '/delete_tracked'
+        else:
+            api = '/delete_all'
+        url = baseurl + api + "/" + str(userid) + "/" + str(assetid)
+        res = requests.delete(url)
+
+        # check for failure:
+        if res.status_code != 200:
+            print("Failed with status code:", res.status_code)
+            print("url: " + url)
+            if res.status_code == 400:  # we'll have an error message
+                body = res.json()
+                print("Error message:", body["message"])
+            return
+
+        # deserialize and extract users:
+        body = res.json()
+        print(body["message"])
+
+    except Exception as e:
+        logging.error("assets() failed:")
+        logging.error("url: " + url)
+        logging.error(e)
+        return
+    
+def change_public(baseurl, userid, assetid, newPublic):
+    try:
+        # call the web service:
+        api = '/change_visibility'
+        url = baseurl + api + "/" + str(userid) + "/" + str(assetid) + "/" + str(newPublic)
+        res = requests.put(url)
+
+        # check for failure:
+        if res.status_code != 200:
+            print("Failed with status code:", res.status_code)
+            print("url: " + url)
+            if res.status_code == 400:  # we'll have an error message
+                body = res.json()
+                print("Error message:", body["message"])
+            return
+
+        # deserialize and extract users:
+        body = res.json()
+        print(body["message"])
+
+    except Exception as e:
+        logging.error("assets() failed:")
+        logging.error("url: " + url)
+        logging.error(e)
+        return
+    
+# get_public_videos(baseurl)
+get_user_videos(baseurl, 80001)
+# users(baseurl)
+exit(0)
+
+# print('------------------')
+# get_user_videos(baseurl, 80004)
+# print('------------------')
+# delete_record(baseurl, 80004, 1008, True)
+print('------------------ should false, but does not care')
+get_user_videos(baseurl, 80004)
+
+print('------------------')
+change_public(baseurl, 80004, 1014, True)
+
+print('------------------, should true')
+get_user_videos(baseurl, 80004)
+
+print('------------------ should fail')
+change_public(baseurl, 80003, 1014, False)
+
+print('------------------, should true')
+get_user_videos(baseurl, 80004)
+
+print('------------------')
+change_public(baseurl, 80004, 1014, False)
+
+print('------------------, should false')
+get_user_videos(baseurl, 80004)
+
+print('------------------')
+change_public(baseurl, 80004, 1014, 1)
+
+# upload_org_video(baseurl, 80004, "example.mp4", False)
+# exit(0)
 # email = str(uuid.uuid4())[:5] + "@" + str(uuid.uuid4())[:5] + ".com"
 # last_name = str(uuid.uuid4())[:5]
 # first_name = str(uuid.uuid4())[:5]
@@ -398,4 +489,4 @@ def upload_new_video(baseurl, assetid, local_filename):
 
 # users(baseurl)
 # get_user_videos(baseurl, 80009)
-upload_new_video(baseurl, 1002, "tracked.mp4")
+# upload_new_video(baseurl, 1002, "tracked.mp4")

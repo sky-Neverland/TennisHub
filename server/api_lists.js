@@ -46,6 +46,15 @@ exports.list_public_videos = async (req, res) => {
         var new_bucketkey = results[i].new_bucketkey;
         var new_video_url = `https://${s3_bucket_name}.s3.${s3_region_name}.amazonaws.com/${new_bucketkey}`;
         results[i].new_video_url = new_video_url;
+
+        results[i].userid = results[i].userid.toString();
+        results[i].assetid = results[i].assetid.toString();
+        if (results[i].public === 1) {
+          results[i].public = true;
+        }
+        else {
+          results[i].public = false;
+        }
       }
 
       // setup the response object:
@@ -105,6 +114,14 @@ exports.list_user_videos = async (req, res) => {
         var new_bucketkey = results[i].new_bucketkey;
         var new_video_url = `https://${s3_bucket_name}.s3.${s3_region_name}.amazonaws.com/${new_bucketkey}`;
         results[i].new_video_url = new_video_url;
+        results[i].userid = results[i].userid.toString();
+        results[i].assetid = results[i].assetid.toString();
+        if (results[i].public === 1) {
+          results[i].public = true;
+        }
+        else {
+          results[i].public = false;
+        }
       }
 
       // setup the response object:

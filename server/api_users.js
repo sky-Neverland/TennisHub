@@ -30,7 +30,11 @@ exports.get_users = async (req, res) => {
       }
 
       console.log('Query no error.');
-
+      
+      // convert all results[i].userid to string
+      for (var i = 0; i < results.length; i++) {
+        results[i].userid = results[i].userid.toString();
+      }
       // no error, setup the response object:
       res.json({
         "message": "success",

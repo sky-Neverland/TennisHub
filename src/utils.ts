@@ -252,7 +252,7 @@ export const trackVideo: (
     setShowTrack
 ) => {
     const requestOptions: RequestInit = {
-        method: "POST",
+        method: "GET",
         headers: {
             accept: "application/json",
         },
@@ -273,7 +273,7 @@ export const trackVideo: (
             )
         );
         await fetch(
-            RDS_URL + RDS_API.UPLOAD_VIDEO + "/" + userid,
+            RDS_URL + RDS_API.TRACK_VIDEO + "/" + userid + "/" + assetid,
             requestOptions
         ).then((response) => {
             if (response.status === 200)

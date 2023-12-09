@@ -46,6 +46,7 @@ export enum RDS_API {
     UPLOAD_VIDEO = "/upload_org_video",
     DELETE_VIDEO = "/delete_all",
     CHANGE_VISIBILITY = "/change_visibility",
+    TRACK_VIDEO = "/track",
 }
 
 export enum UploadState {
